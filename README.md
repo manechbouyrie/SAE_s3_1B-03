@@ -28,6 +28,8 @@ Ce projet est développé dans le cadre de la SAÉ S3 à l'IUT de Blagnac. Il co
 - **Planning GANTT (ClickUp) :** [Accéder au ClickUp Spinova](https://app.clickup.com/1500500000015573/v/l/1amp9gqt16n-492)
 - **Gestion des Sprints (GitHub Projects) :** Onglet *Projects* du dépôt (`SAE_s3_1B-03 Board`)
 
+### Documents
+[Consulter le Product Backlog ](Doc/Spinova_Product_Backlog_Complet.pdf)
 
 
 ## Stack Technique
