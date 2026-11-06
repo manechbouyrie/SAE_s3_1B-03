@@ -1,7 +1,7 @@
 # SAE_s3_1B-03
 
 
-# 🌀 Spinova — E-Commerce de Toupies à Lévitation Magnétique
+# Spinova — E-Commerce de Toupies à Lévitation Magnétique
 > **SAE S3.01 - Conception et Développement d'Applications Web & Base de Données**  
 > **IUT de Blagnac** | Groupe : `SAE_s3_1B-03`
 
