@@ -19,10 +19,10 @@ Ce projet est développé dans le cadre de la SAÉ S3 à l'IUT de Blagnac. Il co
 
 | Membre | Rôle Scrum | Sprints / Période |
 | :--- | :--- | :--- |
-| **Gabriel** | Scrum Master | Sprints 1 |
-| **Timéo** | Product Owner | Sprints 1  |
-| **Manech** | Développeur | Sprints 1 |
-| **Arthur** | Développeuse | Sprints 1  |
+| **Gabriel** | Scrum Master | Sprint 1 |
+| **Timéo** | Product Owner | Sprint 1  |
+| **Manech** | Développeur | Sprint 1 |
+| **Arthur** | Développeur | Sprint 1  |
 
 ### Suivi et Planning
 - **Planning GANTT (ClickUp) :** [Accéder au ClickUp Spinova](https://app.clickup.com/1500500000015573/v/l/1amp9gqt16n-492)
