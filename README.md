@@ -37,7 +37,7 @@ Ce projet est développé dans le cadre de la SAÉ S3 à l'IUT de Blagnac. Il co
 - **Serveur Web :** Apache
 - **Langage Backend :** PHP 
 - **Base de Données :** MySQL / MariaDB
-- **Génération de Données :** PHP Faker Library (Script de seed automatisé)
-- **Frontend :** HTML5, CSS3 Mobile-First (Charte Spinova : Nuit, Orange, Cyan, Blanc, Gris bleu), JavaScript Vanilla
-- **Accessibilité :** Balisage WAI-ARIA, mémorisation par cookies
-- **Gestion de Version & Projet :** Git, GitHub Actions / Projects (Scrum Board & Milestones)
+- **Génération de Données :** PHP Faker Library 
+- **Frontend :** HTML5, CSS3 Mobile-First (Charte Spinova : Nuit, Orange, Cyan, Blanc, Gris bleu)
+- **Accessibilité :** mémorisation par cookies
+- **Gestion de Version & Projet :** Git, GitHub Projects (Scrum Board & Milestones)
