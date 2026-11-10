@@ -1,4 +1,5 @@
-# SAE_s3_1B-03
+# SAE_s3_1B-06
+(Gerant de Plant’Us et réalise le site de Spinova)
 
 
 # Spinova — E-Commerce de Toupies à Lévitation Magnétique
