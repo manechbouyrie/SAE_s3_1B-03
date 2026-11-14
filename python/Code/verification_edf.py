@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import itertools
 import math
 import sys
 from pathlib import Path
@@ -101,7 +102,7 @@ def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[d
             occupation[cpu[q]].append((deb[q], fin[q] if fin[q] is not None else T, q))
     for c, lst in occupation.items():
         lst.sort()
-        for (d1, f1, q1), (d2, f2, q2) in zip(lst, lst[1:]):
+        for (d1, f1, q1), (d2, f2, q2) in itertools.pairwise(lst):
             if d2 < f1:
                 err.append(f"{c} : {q1} [{d1},{f1}[ et {q2} [{d2},{f2}[ se chevauchent")
     erreurs["Processeurs (exclusivité, non-préemption)"] = err
