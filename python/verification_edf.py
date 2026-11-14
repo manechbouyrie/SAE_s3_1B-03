@@ -20,8 +20,13 @@ from pathlib import Path
 from statistics import fmean
 
 import pandas as pd
-
-from lecture_fichiers import ErreurDonnees, lire_config, lire_energie, lire_processus, lire_ressources
+from lecture_fichiers import (
+    ErreurDonnees,
+    lire_config,
+    lire_energie,
+    lire_processus,
+    lire_ressources,
+)
 from main_edf import RACINE, trouver_dossier_inputs, trouver_fichier_ressources
 from ordonnanceur_edf import MODES_APRES_PROFIL
 
@@ -37,10 +42,10 @@ def _entier_ou_none(x):
 
 def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[dict[str, list[str]], list[str]]:
     """Renvoie ({contrôle: [erreurs]}, [informations])."""
-    config = lire_config(dossier_in / "config.txt")
+    config = lire_config(dossier_in / "config/config.txt")
     res = lire_ressources(trouver_fichier_ressources(dossier_in, config))
     entree = lire_processus(dossier_in / config["fichier_processus"]).set_index("id_processus")
-    profil = lire_energie(dossier_in / config.get("fichier_energie", "energie.csv"))
+    profil = lire_energie(dossier_in / config.get("fichier_energie", "config/energie.csv"))
     glob = pd.read_csv(dossier_out / config["fichier_global_EDF"])
     alloc = pd.read_csv(dossier_out / config["fichier_allocations_EDF"])
     met = pd.read_csv(dossier_out / config["fichier_metriques"])
@@ -58,7 +63,7 @@ def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[d
     segs: dict[str, list[tuple[int, int, str]]] = {q: [] for q in ids}
     for r in alloc.itertuples():
         segs[r.id_processus].append((int(r.date_debut), int(r.date_fin), r.id_processeur))
-    for q in segs:
+    for q in segs:  # noqa: PLC0206
         segs[q].sort()
     cpu = {q: segs[q][0][2] for q in ids if segs[q]}
 
