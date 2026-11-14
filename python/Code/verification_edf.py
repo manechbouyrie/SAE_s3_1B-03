@@ -1,16 +1,3 @@
-"""Vérification indépendante des résultats EDF.
-
-Ce script ne réutilise PAS la logique du simulateur : il relit uniquement les fichiers d'entrée et les
-fichiers de résultats déjà écrits, puis recontrôle pas à pas chaque contrainte du sujet.
-
-    python Code/verification_edf.py [Test1] [--energie-apres-profil zero|cyclique]
-
-Contrôles : cohérence avec processus.csv, cohérence des dates, un processeur = un processus à la fois et
-processeur fixe par processus (non-préemption), RAM, énergie, règle EDF (ordre de la file, saut des
-processus sans RAM, processeurs jamais laissés inutilement libres, choix du processeur), deadlines
-(informatif) et recalcul des métriques. Code de sortie 0 si tout est conforme, 1 sinon.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -41,7 +28,6 @@ def _entier_ou_none(x):
 
 
 def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[dict[str, list[str]], list[str]]:
-    """Renvoie ({contrôle: [erreurs]}, [informations])."""
     config = lire_config(dossier_in / "config.txt")
     res = lire_ressources(trouver_fichier_ressources(dossier_in, config))
     entree = lire_processus(dossier_in / config["fichier_processus"]).set_index("id_processus")
@@ -67,15 +53,13 @@ def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[d
         segs[q].sort()
     cpu = {q: segs[q][0][2] for q in ids if segs[q]}
 
-    def cle(q):  # même ordre EDF que le sujet : butoir, puis priorité décroissante, soumission, ordre
+    def cle(q):
         return (but[q], -prio[q], sou[q], ordre[q])
 
     T = max([len(profil)] + [f for f in fin.values() if f is not None])
     e = res.energie_par_proc
     erreurs: dict[str, list[str]] = {}
     infos: list[str] = []
-
-    # 1. Cohérence avec processus.csv
     err = []
     if set(ids) != set(entree.index) or len(ids) != len(entree):
         err.append("les processus du fichier global ne correspondent pas à processus.csv")
@@ -86,8 +70,6 @@ def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[d
         if r.ram_utilisee != (ram[q] if deb[q] is not None else 0):
             err.append(f"{q} : RAM utilisée incohérente")
     erreurs["Cohérence avec processus.csv"] = err
-
-    # 2. Cohérence des dates et des segments
     err = []
     for q in ids:
         s = segs[q]
@@ -112,8 +94,6 @@ def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[d
         elif execute >= duree[q]:
             err.append(f"{q} : exécution complète mais sans date de fin")
     erreurs["Cohérence des dates / segments"] = err
-
-    # 3. Un processeur = un processus à la fois, processeur fixe de bout en bout
     err = []
     occupation: dict[str, list[tuple[int, int, str]]] = {c: [] for c in res.ids_processeurs}
     for q in ids:
@@ -125,16 +105,12 @@ def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[d
             if d2 < f1:
                 err.append(f"{c} : {q1} [{d1},{f1}[ et {q2} [{d2},{f2}[ se chevauchent")
     erreurs["Processeurs (exclusivité, non-préemption)"] = err
-
-    # 4. RAM à chaque instant (un processus démarré garde sa RAM jusqu'à sa fin)
     err = []
     for t in range(T):
         utilisee = sum(ram[q] for q in ids if deb[q] is not None and deb[q] <= t and (fin[q] is None or t < fin[q]))
         if utilisee > res.ram_totale:
             err.append(f"t={t} : RAM {utilisee} > {res.ram_totale}")
     erreurs["RAM <= capacité totale à chaque instant"] = err
-
-    # 5. Énergie à chaque instant
     err = []
     conso_totale = 0
     for t in range(T):
@@ -143,8 +119,6 @@ def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[d
         if actifs * e > _energie(t, profil, mode):
             err.append(f"t={t} : consommation {actifs * e} > énergie disponible {_energie(t, profil, mode)}")
     erreurs["Énergie consommée <= énergie disponible à chaque instant"] = err
-
-    # 6. Règle EDF non préemptive, pas à pas
     err = []
     for t in range(T):
         residents = [q for q in ids if deb[q] is not None and deb[q] < t and (fin[q] is None or fin[q] > t)]
@@ -174,8 +148,6 @@ def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[d
                 if q not in deja and ram[q] <= ram_libre:
                     err.append(f"t={t} : {q} admissible (RAM {ram[q]} <= {ram_libre}) alors qu'une capacité d'alimentation était libre")
     erreurs["Règle EDF non préemptive (ordre, RAM, processeurs libres)"] = err
-
-    # 7. Statuts de deadline (informatif + cohérence du statut écrit)
     err = []
     for r in glob.itertuples():
         q = r.id_processus
@@ -185,8 +157,6 @@ def verifier(dossier_in: Path, dossier_out: Path, mode: str = "zero") -> tuple[d
         fin_txt = "non terminé" if fin[q] is None else f"fin={fin[q]}"
         infos.append(f"  {q:<5} {fin_txt:<12} butoir={but[q]:<4} -> {attendu}")
     erreurs["Statuts de deadline cohérents"] = err
-
-    # 8. Recalcul des métriques
     err = []
     dem = [q for q in ids if deb[q] is not None]
     ter = [q for q in ids if fin[q] is not None]

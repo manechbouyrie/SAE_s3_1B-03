@@ -1,15 +1,3 @@
-"""Point d'entrée : ordonnancement EDF non préemptif (SAE S3.01, partie Python).
-
-Utilisation (depuis la racine du projet) :
-    python Code/main_edf.py                      # test par défaut : Inputs/Test1 -> Outputs/Test1
-    python Code/main_edf.py Test2                # Inputs/Test2 -> Outputs/Test2
-    python Code/main_edf.py Test1 --energie-apres-profil cyclique
-
-Le programme lit Inputs/<test>/config.txt, puis ressources.json, processus.csv et energie.csv, simule EDF
-et écrit dans Outputs/<test>/ les fichiers dont les noms sont donnés par config.txt :
-    fichier_global_EDF, fichier_allocations_EDF, fichier_metriques.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -33,12 +21,10 @@ from lecture_fichiers import (
 from metriques import calculer_metriques
 from ordonnanceur_edf import MODES_APRES_PROFIL, ordonnancer_edf
 
-RACINE = Path(__file__).resolve().parent  # dossier contenant Code/, Inputs/, Outputs/
+RACINE = Path(__file__).resolve().parent 
 
 
 def trouver_fichier_ressources(dossier: Path, config: dict[str, str]) -> Path:
-    """Chemin du fichier de ressources. Le sujet impose ressources.json : si config.txt désigne un fichier
-    absent (ex. 'ressources.csv'), on se rabat sur le .json de même nom, en le signalant."""
     nom = config.get("fichier_ressources", "ressources.json")
     chemin = dossier / nom
     if not chemin.is_file() and (dossier / "ressources.json").is_file():

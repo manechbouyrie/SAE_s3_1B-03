@@ -1,15 +1,3 @@
-"""Lecture et validation des fichiers d'entrée de l'ordonnanceur.
-
-Fichiers lus (formats imposés par le sujet) :
-  - config.txt      : paramètres (clé = valeur)
-  - ressources.json : processeurs, RAM totale, énergie par processeur et par pas de temps
-  - processus.csv   : processus à ordonnancer
-  - energie.csv     : énergie renouvelable disponible à chaque pas de temps
-
-Aucune donnée n'est modifiée ni inventée : si un fichier est absent, illisible ou
-incohérent, une ErreurDonnees explicite est levée.
-"""
-
 from __future__ import annotations
 
 import json
@@ -30,24 +18,17 @@ COLONNES_ENERGIE = ["instant", "energie_disponible"]
 
 
 class ErreurDonnees(Exception):
-    """Fichier d'entrée absent, illisible ou incohérent."""
-
+    pass
 
 @dataclass(frozen=True)
 class Ressources:
-    """Contenu de ressources.json."""
-
     nb_processeurs: int
     ram_totale: int
-    energie_par_proc: int  # énergie consommée par un processeur actif sur un pas de temps
-    ids_processeurs: list[str]  # identifiants réels (ex. ["CPU1", "CPU2"])
+    energie_par_proc: int
+    ids_processeurs: list[str]
 
 
-# --------------------------------------------------------------------------- #
-# config.txt
-# --------------------------------------------------------------------------- #
 def lire_config(chemin: Path) -> dict[str, str]:
-    """Lit config.txt : lignes 'clé = valeur', les lignes vides ou '#...' sont ignorées."""
     chemin = Path(chemin)
     if not chemin.is_file():
         raise ErreurDonnees(f"Fichier de configuration introuvable : {chemin}")
@@ -67,21 +48,16 @@ def lire_config(chemin: Path) -> dict[str, str]:
 
 
 def exiger_cles(config: dict[str, str], cles: list[str]) -> None:
-    """Vérifie que les clés indispensables sont présentes (et non vides) dans la config."""
     manquantes = [c for c in cles if not config.get(c)]
     if manquantes:
         raise ErreurDonnees(f"Clés manquantes dans config.txt : {', '.join(manquantes)}")
 
 
 def lire_algorithmes(config: dict[str, str]) -> list[str]:
-    """Liste des algorithmes demandés (ex. 'FIFO,RR,EDF' -> ['FIFO', 'RR', 'EDF'])."""
     exiger_cles(config, ["algorithmes"])
     return [a.strip().upper() for a in config["algorithmes"].split(",") if a.strip()]
 
 
-# --------------------------------------------------------------------------- #
-# ressources.json
-# --------------------------------------------------------------------------- #
 def _entier_positif(valeur, nom: str) -> int:
     if isinstance(valeur, bool) or not isinstance(valeur, int) or valeur <= 0:
         raise ErreurDonnees(f"ressources.json : '{nom}' doit être un entier > 0 (reçu : {valeur!r})")
@@ -89,7 +65,6 @@ def _entier_positif(valeur, nom: str) -> int:
 
 
 def lire_ressources(chemin: Path) -> Ressources:
-    """Lit ressources.json et vérifie sa cohérence (nombre de CPU = longueur de la liste d'ids)."""
     chemin = Path(chemin)
     if not chemin.is_file():
         raise ErreurDonnees(f"Fichier de ressources introuvable : {chemin}")
@@ -118,12 +93,7 @@ def lire_ressources(chemin: Path) -> Ressources:
         )
     return Ressources(nb_processeurs=nb, ram_totale=ram, energie_par_proc=energie, ids_processeurs=list(ids))
 
-
-# --------------------------------------------------------------------------- #
-# CSV (processus, énergie)
-# --------------------------------------------------------------------------- #
 def _lire_csv(chemin: Path, colonnes: list[str]) -> pd.DataFrame:
-    """Lit un CSV avec pandas, vérifie colonnes présentes, fichier non vide, aucune valeur manquante."""
     chemin = Path(chemin)
     if not chemin.is_file():
         raise ErreurDonnees(f"Fichier introuvable : {chemin}")
@@ -146,7 +116,6 @@ def _lire_csv(chemin: Path, colonnes: list[str]) -> pd.DataFrame:
 
 
 def _colonne_entiere(df: pd.DataFrame, colonne: str, nom_fichier: str, minimum: int) -> None:
-    """Convertit une colonne en entiers (erreur si texte ou décimaux) et vérifie une borne minimale."""
     try:
         numerique = pd.to_numeric(df[colonne], errors="raise")
     except (ValueError, TypeError) as e:
@@ -159,7 +128,6 @@ def _colonne_entiere(df: pd.DataFrame, colonne: str, nom_fichier: str, minimum: 
 
 
 def lire_processus(chemin: Path) -> pd.DataFrame:
-    """Lit processus.csv. L'ordre des lignes du fichier est conservé (sert de départage final)."""
     df = _lire_csv(chemin, COLONNES_PROCESSUS)
     nom = Path(chemin).name
     df["id_processus"] = df["id_processus"].astype(str).str.strip()
@@ -175,11 +143,7 @@ def lire_processus(chemin: Path) -> pd.DataFrame:
 
 
 def lire_energie(chemin: Path) -> list[int]:
-    """Lit energie.csv et renvoie la liste des énergies indexée par instant (profil[t] = énergie à t).
 
-    Les instants doivent être 0, 1, 2, ... sans trou, sinon une erreur est levée
-    (on n'invente aucune valeur manquante).
-    """
     df = _lire_csv(chemin, COLONNES_ENERGIE)
     nom = Path(chemin).name
     _colonne_entiere(df, "instant", nom, 0)

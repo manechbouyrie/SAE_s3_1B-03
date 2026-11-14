@@ -1,9 +1,3 @@
-"""Écriture des fichiers de résultats (CSV, séparateur virgule, UTF-8) lus ensuite par l'application Java.
-
-Dates : pas de temps entiers ; la date de fin est EXCLUSIVE (un processus exécuté aux pas 13 à 17 a pour
-date de début 13 et date de fin 18). Une cellule vide signifie "valeur non définie" (ex. processus non terminé).
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -15,7 +9,7 @@ from ordonnanceur_edf import ResultatSimulation
 COLONNES_GLOBAL = [
     "id_processus", "date_soumission", "date_debut_execution", "date_fin_execution",
     "ram_demandee", "ram_utilisee",
-    "date_butoir", "statut",  # colonnes complémentaires utiles pour EDF (respect des deadlines)
+    "date_butoir", "statut", 
 ]
 COLONNES_ALLOCATIONS = ["id_processus", "date_debut", "date_fin", "id_processeur"]
 COLONNES_ENTIERES_METRIQUES = [
@@ -40,7 +34,6 @@ def _statut(p) -> str:
 
 
 def ecrire_allocation_globale(chemin: Path, resultat: ResultatSimulation) -> None:
-    """Un enregistrement par processus : soumission, premier démarrage, fin, RAM demandée / utilisée."""
     lignes = [
         {
             "id_processus": p.id,
@@ -61,17 +54,11 @@ def ecrire_allocation_globale(chemin: Path, resultat: ResultatSimulation) -> Non
 
 
 def ecrire_allocations_detaillees(chemin: Path, resultat: ResultatSimulation) -> None:
-    """Un enregistrement par période continue d'exécution d'un processus sur un processeur."""
     allocations = sorted(resultat.allocations, key=lambda a: (a["date_debut"], a["id_processeur"]))
     _ecrire(pd.DataFrame(allocations, columns=COLONNES_ALLOCATIONS), chemin)
 
 
 def ecrire_metriques(chemin: Path, metriques: dict) -> None:
-    """Écrit la ligne de métriques de l'algorithme dans le fichier commun.
-
-    Le fichier de métriques est partagé entre algorithmes : si il existe déjà, les lignes des autres
-    algorithmes sont conservées et seule la ligne de cet algorithme est remplacée.
-    """
     chemin = Path(chemin)
     df = pd.DataFrame([metriques])
     if chemin.is_file():
