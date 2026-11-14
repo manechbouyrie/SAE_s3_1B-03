@@ -33,7 +33,7 @@ from lecture_fichiers import (
 from metriques import calculer_metriques
 from ordonnanceur_edf import MODES_APRES_PROFIL, ordonnancer_edf
 
-RACINE = Path(__file__).resolve().parent.parent  # dossier contenant Code/, Inputs/, Outputs/
+RACINE = Path(__file__).resolve().parent  # dossier contenant Code/, Inputs/, Outputs/
 
 
 def trouver_fichier_ressources(dossier: Path, config: dict[str, str]) -> Path:
