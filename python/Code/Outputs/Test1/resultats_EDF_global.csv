@@ -1,0 +1,4 @@
+id_processus,date_soumission,date_debut_execution,date_fin_execution,ram_demandee,ram_utilisee,date_butoir,statut
+P1,0,8,13,512,512,20,termine
+P2,1,7,10,256,256,15,termine
+P3,2,13,,1024,1024,30,non_termine

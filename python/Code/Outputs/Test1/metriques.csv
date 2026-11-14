@@ -1,0 +1,2 @@
+algorithme,temps_attente_moyen,temps_reponse_moyen,makespan,energie_consommee_totale,energie_disponible_totale,taux_utilisation_energie,nb_processus_termines,nb_deadlines_manquees
+EDF,7.0,8.3333,,520,1490,0.349,2,1
