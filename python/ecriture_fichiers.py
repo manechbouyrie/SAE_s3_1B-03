@@ -9,7 +9,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-
 from lecture_fichiers import ErreurDonnees
 from ordonnanceur_edf import ResultatSimulation
 

@@ -39,11 +39,11 @@ RACINE = Path(__file__).resolve().parent.parent  # dossier contenant Code/, Inpu
 def trouver_fichier_ressources(dossier: Path, config: dict[str, str]) -> Path:
     """Chemin du fichier de ressources. Le sujet impose ressources.json : si config.txt désigne un fichier
     absent (ex. 'ressources.csv'), on se rabat sur le .json de même nom, en le signalant."""
-    nom = config.get("fichier_ressources", "config/ressources.json")
+    nom = config.get("fichier_ressources", "ressources.json")
     chemin = dossier / nom
-    if not chemin.is_file() and (dossier / "config/ressources.json").is_file():
-        print(f"Avertissement : '{nom}' (config/config.txt) introuvable, utilisation de config/ressources.json.")
-        chemin = dossier / "config/ressources.json"
+    if not chemin.is_file() and (dossier / "ressources.json").is_file():
+        print(f"Avertissement : '{nom}' (config.txt) introuvable, utilisation de ressources.json.")
+        chemin = dossier / "ressources.json"
     return chemin
 
 
