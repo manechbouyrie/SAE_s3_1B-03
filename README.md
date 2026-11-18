@@ -36,7 +36,7 @@ Gabriel : Round Robin
 - **Gestion des Sprints (GitHub Projects) :** Onglet *Projects* du dépôt (`SAE_s3_1B-03 Board`)
 
 ### Documents
-[Consulter le Product Backlog ](Doc/Spinova_Product_Backlog_Complet.pdf)
+[Consulter le Product Backlog ](Doc/Spinova_Product_Backlog_Complet.xlsx - Product Backlog.pdf)
 
 
 ## Stack Technique
