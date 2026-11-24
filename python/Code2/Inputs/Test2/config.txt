@@ -1,0 +1,22 @@
+# Configuration de l'ordonnanceur
+fichier_processus = processus.csv
+fichier_ressources = ressources.csv
+algorithmes = FIFO,RR,EDF
+
+# Fichiers de sortie pour FIFO
+fichier_global_FIFO = resultats_fifo_global.csv
+fichier_allocations_FIFO = resultats_fifo_allocations.csv
+
+# Fichiers de sortie pour RR
+fichier_global_RoundRobin = resultats_roundrobin_global.csv
+fichier_allocations_RoundRobin = resultats_roundrobin_allocations.csv
+
+# Fichiers de sortie pour EDF
+fichier_global_EDF = resultats_EDF_global.csv
+fichier_allocations_EDF = resultats_EDF_allocations.csv
+
+# Fichier métriques commun
+fichier_metriques = metriques.csv
+
+# Paramètres
+quantum = 2
