@@ -15,7 +15,7 @@ import javafx.stage.Stage;
 /**
  * Application JavaFX principale pour le jeu Sokoban.
  */
-public class SokobanApp extends Application {
+public class AppOrdonnancement extends Application {
 
     private BorderPane rootPane;
 	private Stage primaryStage;
@@ -27,7 +27,7 @@ public void start(Stage primaryStage){
 	this.rootPane     = new BorderPane();
 		
 	Scene scene = new Scene(rootPane);
-	scene.getStylesheets().add(SokobanApp.class.getResource("style.css").toExternalForm());
+	scene.getStylesheets().add(AppOrdonnancement.class.getResource("style.css").toExternalForm());
 	primaryStage.setTitle("GestClub App");
 	primaryStage.setScene(scene);
 
@@ -46,7 +46,7 @@ public void start(Stage primaryStage){
         
     try{
         FXMLLoader loader = new FXMLLoader();
-		loader.setLocation( SokobanApp.class.getResource("view/sokoban.fxml"));
+		loader.setLocation( AppOrdonnancement.class.getResource("view/sokoban.fxml"));
         BorderPane vueSokoban = loader.load();
         
 
@@ -82,7 +82,7 @@ public void start(Stage primaryStage){
     public void loadmenu() {
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			loader.setLocation( SokobanApp.class.getResource("view/menu.fxml"));
+			loader.setLocation( AppOrdonnancement.class.getResource("view/menu.fxml"));
 			
 			BorderPane vueListe = loader.load();
 			

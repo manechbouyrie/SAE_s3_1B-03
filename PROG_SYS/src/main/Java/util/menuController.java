@@ -10,7 +10,7 @@ import javafx.scene.control.Button;
 
 public class menuController implements Initializable{
 
-    private SokobanApp parent;
+    private AppOrdonnancement parent;
 
     @FXML
     private Button buttonTuto;
@@ -34,7 +34,7 @@ public class menuController implements Initializable{
         parent.showSokoban("charger");
     }
 
-    public void setParent(SokobanApp parent){
+    public void setParent(AppOrdonnancement parent){
         this.parent = parent;
     }
 
