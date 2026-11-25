@@ -1,10 +1,8 @@
-from __future__ import annotations
+"""Lecture et vérification des fichiers d'entrée (config, ressources, processus, énergie)."""
 
+import csv
 import json
-from dataclasses import dataclass
 from pathlib import Path
-
-import pandas as pd
 
 COLONNES_PROCESSUS = [
     "id_processus",
@@ -18,25 +16,36 @@ COLONNES_ENERGIE = ["instant", "energie_disponible"]
 
 
 class ErreurDonnees(Exception):
-    pass
+    """Levée quand un fichier d'entrée est absent ou invalide."""
 
-@dataclass(frozen=True)
+
 class Ressources:
-    nb_processeurs: int
-    ram_totale: int
-    energie_par_proc: int
-    ids_processeurs: list[str]
+    """Les ressources de la machine, lues dans ressources.json."""
+
+    def __init__(self, nb_processeurs, ram_totale, energie_par_proc, ids_processeurs):
+        self.nb_processeurs = nb_processeurs
+        self.ram_totale = ram_totale
+        self.energie_par_proc = energie_par_proc
+        self.ids_processeurs = ids_processeurs
 
 
-def lire_config(chemin: Path) -> dict[str, str]:
+# ----------------------------------------------------------------------
+# config.txt
+# ----------------------------------------------------------------------
+
+def lire_config(chemin):
+    """Lit un fichier 'clé = valeur' (les lignes vides et les # sont ignorées)."""
     chemin = Path(chemin)
     if not chemin.is_file():
         raise ErreurDonnees(f"Fichier de configuration introuvable : {chemin}")
-    config: dict[str, str] = {}
+
+    config = {}
+    numero = 0
     with open(chemin, encoding="utf-8-sig", errors="replace") as f:
-        for numero, ligne in enumerate(f, start=1):
-            ligne = ligne.strip()  # supprime aussi les fins de ligne CRLF
-            if not ligne or ligne.startswith("#"):
+        for ligne in f:
+            numero += 1
+            ligne = ligne.strip()
+            if ligne == "" or ligne.startswith("#"):
                 continue
             if "=" not in ligne:
                 raise ErreurDonnees(
@@ -47,43 +56,67 @@ def lire_config(chemin: Path) -> dict[str, str]:
     return config
 
 
-def exiger_cles(config: dict[str, str], cles: list[str]) -> None:
-    manquantes = [c for c in cles if not config.get(c)]
-    if manquantes:
-        raise ErreurDonnees(f"Clés manquantes dans config.txt : {', '.join(manquantes)}")
+def exiger_cles(config, cles):
+    """Vérifie que toutes les clés demandées sont présentes et non vides."""
+    manquantes = []
+    for cle in cles:
+        if not config.get(cle):
+            manquantes.append(cle)
+    if len(manquantes) > 0:
+        raise ErreurDonnees("Clés manquantes dans config.txt : " + ", ".join(manquantes))
 
 
-def lire_algorithmes(config: dict[str, str]) -> list[str]:
+def lire_algorithmes(config):
+    """Renvoie la liste des algorithmes demandés, en majuscules (ex : ['FIFO', 'EDF'])."""
     exiger_cles(config, ["algorithmes"])
-    return [a.strip().upper() for a in config["algorithmes"].split(",") if a.strip()]
+    algorithmes = []
+    for nom in config["algorithmes"].split(","):
+        nom = nom.strip().upper()
+        if nom != "":
+            algorithmes.append(nom)
+    return algorithmes
 
 
-def _entier_positif(valeur, nom: str) -> int:
-    if isinstance(valeur, bool) or not isinstance(valeur, int) or valeur <= 0:
+# ----------------------------------------------------------------------
+# ressources.json
+# ----------------------------------------------------------------------
+
+def _entier_positif(valeur, nom):
+    # type(valeur) is not int : refuse aussi les booléens et les nombres à virgule
+    if type(valeur) is not int or valeur <= 0:
         raise ErreurDonnees(f"ressources.json : '{nom}' doit être un entier > 0 (reçu : {valeur!r})")
     return valeur
 
 
-def lire_ressources(chemin: Path) -> Ressources:
+def lire_ressources(chemin):
     chemin = Path(chemin)
     if not chemin.is_file():
         raise ErreurDonnees(f"Fichier de ressources introuvable : {chemin}")
+
     try:
         with open(chemin, encoding="utf-8-sig") as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
-        raise ErreurDonnees(f"{chemin.name} : JSON invalide ({e})") from e
+        raise ErreurDonnees(f"{chemin.name} : JSON invalide ({e})")
 
-    cles = ["nbProcesseurs", "ramTotale", "energieParProc", "processeur"]
-    manquantes = [c for c in cles if c not in data]
-    if manquantes:
+    manquantes = []
+    for cle in ["nbProcesseurs", "ramTotale", "energieParProc", "processeur"]:
+        if cle not in data:
+            manquantes.append(cle)
+    if len(manquantes) > 0:
         raise ErreurDonnees(f"{chemin.name} : clés manquantes : {', '.join(manquantes)}")
 
     nb = _entier_positif(data["nbProcesseurs"], "nbProcesseurs")
     ram = _entier_positif(data["ramTotale"], "ramTotale")
     energie = _entier_positif(data["energieParProc"], "energieParProc")
+
     ids = data["processeur"]
-    if not isinstance(ids, list) or not all(isinstance(i, str) and i.strip() for i in ids):
+    ids_valides = isinstance(ids, list)
+    if ids_valides:
+        for identifiant in ids:
+            if not isinstance(identifiant, str) or identifiant.strip() == "":
+                ids_valides = False
+    if not ids_valides:
         raise ErreurDonnees(f"{chemin.name} : 'processeur' doit être une liste d'identifiants texte")
     if len(set(ids)) != len(ids):
         raise ErreurDonnees(f"{chemin.name} : identifiants de processeurs en double : {ids}")
@@ -91,64 +124,120 @@ def lire_ressources(chemin: Path) -> Ressources:
         raise ErreurDonnees(
             f"{chemin.name} : nbProcesseurs={nb} mais {len(ids)} identifiants listés ({ids})"
         )
-    return Ressources(nb_processeurs=nb, ram_totale=ram, energie_par_proc=energie, ids_processeurs=list(ids))
+    return Ressources(nb, ram, energie, ids)
 
-def _lire_csv(chemin: Path, colonnes: list[str]) -> pd.DataFrame:
+
+# ----------------------------------------------------------------------
+# Fichiers CSV (processus.csv et energie.csv)
+# ----------------------------------------------------------------------
+
+def _lire_csv(chemin, colonnes):
+    """Lit un CSV et renvoie une liste de dictionnaires (un par ligne), après vérification."""
     chemin = Path(chemin)
     if not chemin.is_file():
         raise ErreurDonnees(f"Fichier introuvable : {chemin}")
-    try:
-        df = pd.read_csv(chemin, encoding="utf-8-sig")
-    except (pd.errors.EmptyDataError, pd.errors.ParserError, UnicodeDecodeError) as e:
-        raise ErreurDonnees(f"{chemin.name} : lecture impossible ({e})") from e
 
-    df.columns = [str(c).strip() for c in df.columns]
-    manquantes = [c for c in colonnes if c not in df.columns]
-    if manquantes:
+    try:
+        with open(chemin, encoding="utf-8-sig", newline="") as f:
+            lecteur = csv.DictReader(f)
+            if lecteur.fieldnames is None:
+                raise ErreurDonnees(f"{chemin.name} : lecture impossible (fichier vide)")
+            lecteur.fieldnames = [nom.strip() for nom in lecteur.fieldnames]
+            lignes = list(lecteur)
+    except (csv.Error, UnicodeDecodeError) as e:
+        raise ErreurDonnees(f"{chemin.name} : lecture impossible ({e})")
+
+    manquantes = []
+    for colonne in colonnes:
+        if colonne not in lecteur.fieldnames:
+            manquantes.append(colonne)
+    if len(manquantes) > 0:
         raise ErreurDonnees(f"{chemin.name} : colonnes manquantes : {', '.join(manquantes)}")
-    if df.empty:
+
+    if len(lignes) == 0:
         raise ErreurDonnees(f"{chemin.name} : le fichier ne contient aucune donnée")
-    vides = df[colonnes].isna()
-    if vides.any().any():
-        lignes = sorted((vides.any(axis=1)[vides.any(axis=1)].index + 2).tolist())  # +2 : en-tête + base 1
-        raise ErreurDonnees(f"{chemin.name} : valeurs manquantes aux lignes {lignes}")
-    return df[colonnes].copy()
+
+    # Cellules vides ? (+2 : on compte l'en-tête et la numérotation commence à 1)
+    lignes_incompletes = []
+    for i in range(len(lignes)):
+        for colonne in colonnes:
+            valeur = lignes[i][colonne]
+            if valeur is None or valeur.strip() == "":
+                lignes_incompletes.append(i + 2)
+                break
+    if len(lignes_incompletes) > 0:
+        raise ErreurDonnees(f"{chemin.name} : valeurs manquantes aux lignes {lignes_incompletes}")
+
+    return lignes
 
 
-def _colonne_entiere(df: pd.DataFrame, colonne: str, nom_fichier: str, minimum: int) -> None:
+def _entier(texte, colonne, nom_fichier, numero_ligne, minimum=None):
+    """Convertit un texte en entier ('5' et '5.0' sont acceptés, pas '2.5') et vérifie valeur >= minimum."""
     try:
-        numerique = pd.to_numeric(df[colonne], errors="raise")
-    except (ValueError, TypeError) as e:
-        raise ErreurDonnees(f"{nom_fichier} : la colonne '{colonne}' doit être numérique ({e})") from e
-    if not (numerique % 1 == 0).all():
-        raise ErreurDonnees(f"{nom_fichier} : la colonne '{colonne}' doit contenir des entiers")
-    df[colonne] = numerique.astype("int64")
-    if (df[colonne] < minimum).any():
-        raise ErreurDonnees(f"{nom_fichier} : '{colonne}' doit être >= {minimum}")
+        nombre = float(texte)
+        est_entier = nombre.is_integer()
+    except ValueError:
+        est_entier = False
+    if not est_entier:
+        raise ErreurDonnees(
+            f"{nom_fichier}, ligne {numero_ligne} : '{colonne}' doit être un entier (reçu : {texte!r})"
+        )
+    valeur = int(nombre)
+    if minimum is not None and valeur < minimum:
+        raise ErreurDonnees(f"{nom_fichier}, ligne {numero_ligne} : '{colonne}' doit être >= {minimum}")
+    return valeur
 
 
-def lire_processus(chemin: Path) -> pd.DataFrame:
-    df = _lire_csv(chemin, COLONNES_PROCESSUS)
+def lire_processus(chemin):
+    """Renvoie la liste des processus : un dictionnaire par ligne de processus.csv."""
     nom = Path(chemin).name
-    df["id_processus"] = df["id_processus"].astype(str).str.strip()
-    if df["id_processus"].duplicated().any():
-        doublons = df.loc[df["id_processus"].duplicated(), "id_processus"].tolist()
+    lignes = _lire_csv(chemin, COLONNES_PROCESSUS)
+
+    # Identifiants en double ?
+    ids_vus = set()
+    doublons = []
+    for ligne in lignes:
+        identifiant = ligne["id_processus"].strip()
+        if identifiant in ids_vus:
+            doublons.append(identifiant)
+        ids_vus.add(identifiant)
+    if len(doublons) > 0:
         raise ErreurDonnees(f"{nom} : identifiants de processus en double : {doublons}")
-    _colonne_entiere(df, "date_soumission", nom, 0)
-    _colonne_entiere(df, "duree_execution", nom, 1)
-    _colonne_entiere(df, "ram_necessaire", nom, 0)
-    _colonne_entiere(df, "priorite", nom, -(10**9))  # une priorité peut être n'importe quel entier
-    _colonne_entiere(df, "date_butoir", nom, 0)
-    return df.reset_index(drop=True)
+
+    processus = []
+    for i in range(len(lignes)):
+        ligne = lignes[i]
+        numero = i + 2
+        processus.append({
+            "id_processus": ligne["id_processus"].strip(),
+            "date_soumission": _entier(ligne["date_soumission"], "date_soumission", nom, numero, 0),
+            "duree_execution": _entier(ligne["duree_execution"], "duree_execution", nom, numero, 1),
+            "ram_necessaire": _entier(ligne["ram_necessaire"], "ram_necessaire", nom, numero, 0),
+            "priorite": _entier(ligne["priorite"], "priorite", nom, numero),  # n'importe quel entier
+            "date_butoir": _entier(ligne["date_butoir"], "date_butoir", nom, numero, 0),
+        })
+    return processus
 
 
-def lire_energie(chemin: Path) -> list[int]:
-
-    df = _lire_csv(chemin, COLONNES_ENERGIE)
+def lire_energie(chemin):
+    """Renvoie le profil d'énergie : une liste où profil[t] = énergie disponible à l'instant t."""
     nom = Path(chemin).name
-    _colonne_entiere(df, "instant", nom, 0)
-    _colonne_entiere(df, "energie_disponible", nom, 0)
-    df = df.sort_values("instant").reset_index(drop=True)
-    if df["instant"].tolist() != list(range(len(df))):
-        raise ErreurDonnees(f"{nom} : les instants doivent être consécutifs à partir de 0 (sans trou ni doublon)")
-    return df["energie_disponible"].tolist()
+    lignes = _lire_csv(chemin, COLONNES_ENERGIE)
+
+    mesures = []  # liste de couples (instant, énergie)
+    for i in range(len(lignes)):
+        numero = i + 2
+        instant = _entier(lignes[i]["instant"], "instant", nom, numero, 0)
+        energie = _entier(lignes[i]["energie_disponible"], "energie_disponible", nom, numero, 0)
+        mesures.append((instant, energie))
+    mesures.sort()
+
+    profil = []
+    for position in range(len(mesures)):
+        instant, energie = mesures[position]
+        if instant != position:
+            raise ErreurDonnees(
+                f"{nom} : les instants doivent être consécutifs à partir de 0 (sans trou ni doublon)"
+            )
+        profil.append(energie)
+    return profil

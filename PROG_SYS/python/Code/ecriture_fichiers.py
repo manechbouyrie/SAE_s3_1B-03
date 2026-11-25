@@ -1,75 +1,72 @@
-from __future__ import annotations
+"""Écriture des fichiers de résultats (CSV)."""
 
+import csv
 from pathlib import Path
 
-import pandas as pd
 from lecture_fichiers import ErreurDonnees
-from ordonnanceur_edf import ResultatSimulation
 
 COLONNES_GLOBAL = [
     "id_processus", "date_soumission", "date_debut_execution", "date_fin_execution",
-    "ram_demandee", "ram_utilisee",
-    "date_butoir", "statut", 
+    "ram_demandee", "ram_utilisee", "date_butoir", "statut",
 ]
 COLONNES_ALLOCATIONS = ["id_processus", "date_debut", "date_fin", "id_processeur"]
-COLONNES_ENTIERES_METRIQUES = [
-    "makespan", "energie_consommee_totale", "energie_disponible_totale",
-    "nb_processus_termines", "nb_deadlines_manquees",
-]
 
 
-def _ecrire(df: pd.DataFrame, chemin: Path) -> None:
+def _ecrire_csv(chemin, colonnes, lignes):
+    """Écrit un CSV : 'lignes' est une liste de dictionnaires (None est écrit comme une cellule vide)."""
     chemin = Path(chemin)
     try:
         chemin.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(chemin, index=False)
+        with open(chemin, "w", encoding="utf-8", newline="") as f:
+            ecrivain = csv.DictWriter(f, fieldnames=colonnes, extrasaction="ignore")
+            ecrivain.writeheader()
+            ecrivain.writerows(lignes)
     except OSError as e:
-        raise ErreurDonnees(f"Écriture impossible de {chemin} : {e}") from e
+        raise ErreurDonnees(f"Écriture impossible de {chemin} : {e}")
 
 
-def _statut(p) -> str:
-    if p.fin is None:
-        return "non_termine"
-    return "termine" if p.fin <= p.butoir else "termine_en_retard"
-
-
-def ecrire_allocation_globale(chemin: Path, resultat: ResultatSimulation) -> None:
-    lignes = [
-        {
+def ecrire_allocation_globale(chemin, resultat):
+    """Une ligne par processus : dates de début et de fin, RAM, statut."""
+    lignes = []
+    for p in resultat.processus:
+        ram_utilisee = 0
+        if p.debut is not None:
+            ram_utilisee = p.ram  # la RAM n'est réservée qu'une fois le processus démarré
+        lignes.append({
             "id_processus": p.id,
             "date_soumission": p.soumission,
             "date_debut_execution": p.debut,
             "date_fin_execution": p.fin,
             "ram_demandee": p.ram,
-            "ram_utilisee": p.ram if p.debut is not None else 0,  # RAM réservée seulement une fois démarré
+            "ram_utilisee": ram_utilisee,
             "date_butoir": p.butoir,
-            "statut": _statut(p),
-        }
-        for p in resultat.processus
-    ]
-    df = pd.DataFrame(lignes, columns=COLONNES_GLOBAL)
-    for col in ("date_debut_execution", "date_fin_execution"):
-        df[col] = df[col].astype("Int64")  # entiers + cellules vides (évite "13.0")
-    _ecrire(df, chemin)
+            "statut": p.statut(),
+        })
+    _ecrire_csv(chemin, COLONNES_GLOBAL, lignes)
 
 
-def ecrire_allocations_detaillees(chemin: Path, resultat: ResultatSimulation) -> None:
+def ecrire_allocations_detaillees(chemin, resultat):
+    """Une ligne par segment d'exécution, triée par date de début puis par processeur."""
     allocations = sorted(resultat.allocations, key=lambda a: (a["date_debut"], a["id_processeur"]))
-    _ecrire(pd.DataFrame(allocations, columns=COLONNES_ALLOCATIONS), chemin)
+    _ecrire_csv(chemin, COLONNES_ALLOCATIONS, allocations)
 
 
-def ecrire_metriques(chemin: Path, metriques: dict) -> None:
+def ecrire_metriques(chemin, metriques):
+    """Ajoute la ligne de l'algorithme au fichier (en remplaçant son ancienne ligne si elle existe)."""
     chemin = Path(chemin)
-    df = pd.DataFrame([metriques])
+
+    # On garde les lignes des autres algorithmes
+    lignes = []
     if chemin.is_file():
         try:
-            ancien = pd.read_csv(chemin)
-        except (pd.errors.EmptyDataError, pd.errors.ParserError):
-            ancien = pd.DataFrame()
-        if not ancien.empty and "algorithme" in ancien.columns:
-            ancien = ancien[ancien["algorithme"] != metriques["algorithme"]]
-            df = pd.concat([ancien, df], ignore_index=True) if not ancien.empty else df
-    for col in COLONNES_ENTIERES_METRIQUES:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col]).astype("Int64")
-    _ecrire(df, chemin)
+            with open(chemin, encoding="utf-8", newline="") as f:
+                for ligne in csv.DictReader(f):
+                    if ligne.get("algorithme") != metriques["algorithme"]:
+                        lignes.append(ligne)
+        except csv.Error:
+            lignes = []  # ancien fichier illisible : on repart de zéro
+        except (OSError, UnicodeDecodeError) as e:
+            raise ErreurDonnees(f"Lecture impossible de {chemin} : {e}")
+
+    lignes.append(metriques)
+    _ecrire_csv(chemin, list(metriques.keys()), lignes)

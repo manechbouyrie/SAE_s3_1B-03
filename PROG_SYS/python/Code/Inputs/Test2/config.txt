@@ -1,6 +1,6 @@
 # Configuration de l'ordonnanceur
 fichier_processus = processus.csv
-fichier_ressources = ressources.csv
+fichier_ressources = ressources.json
 algorithmes = FIFO,RR,EDF
 
 # Fichiers de sortie pour FIFO

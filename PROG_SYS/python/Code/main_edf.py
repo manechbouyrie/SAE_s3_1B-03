@@ -1,4 +1,10 @@
-from __future__ import annotations
+"""Programme principal : lit un jeu de test, lance l'ordonnancement EDF et écrit les résultats.
+
+Exemples :
+    python main_edf.py                  (jeu de test Test1)
+    python main_edf.py Test2
+    python main_edf.py Test2 --energie-apres-profil cyclique
+"""
 
 import argparse
 import sys
@@ -21,10 +27,17 @@ from lecture_fichiers import (
 from metriques import calculer_metriques
 from ordonnanceur_edf import MODES_APRES_PROFIL, ordonnancer_edf
 
-RACINE = Path(__file__).resolve().parent 
+RACINE = Path(__file__).resolve().parent  # dossier qui contient Inputs/ et Outputs/
+
+LIBELLES_STATUT = {
+    "non_termine": "non terminé",
+    "termine": "terminé",
+    "termine_en_retard": "terminé EN RETARD",
+}
 
 
-def trouver_fichier_ressources(dossier: Path, config: dict[str, str]) -> Path:
+def trouver_fichier_ressources(dossier, config):
+    """Fichier de ressources indiqué dans config.txt, sinon ressources.json par défaut."""
     nom = config.get("fichier_ressources", "ressources.json")
     chemin = dossier / nom
     if not chemin.is_file() and (dossier / "ressources.json").is_file():
@@ -33,7 +46,8 @@ def trouver_fichier_ressources(dossier: Path, config: dict[str, str]) -> Path:
     return chemin
 
 
-def trouver_dossier_inputs(test: str, racine: Path) -> Path:
+def trouver_dossier_inputs(test, racine):
+    """Cherche Inputs/<test> dans la racine, sinon considère 'test' comme un chemin de dossier."""
     candidat = racine / "Inputs" / test
     if candidat.is_dir():
         return candidat
@@ -42,22 +56,32 @@ def trouver_dossier_inputs(test: str, racine: Path) -> Path:
     raise ErreurDonnees(f"Dossier de test introuvable : {candidat}")
 
 
-def _afficher_resume(resultat, metriques: dict, ressources) -> None:
+def afficher_resume(resultat, metriques):
     print(f"\n{'Processus':<10}{'Soumis':>7}{'Début':>7}{'Fin':>6}{'Butoir':>8}  {'CPU':<6}Statut")
-    for p in sorted(resultat.processus, key=lambda p: (p.debut is None, p.debut, p.ordre)):
-        deb = "-" if p.debut is None else p.debut
-        fin = "-" if p.fin is None else p.fin
-        statut = "non terminé" if p.fin is None else ("terminé" if p.fin <= p.butoir else "terminé EN RETARD")
-        print(f"{p.id:<10}{p.soumission:>7}{deb!s:>7}{fin!s:>6}{p.butoir:>8}  {p.processeur or '-':<6}{statut}")
+
+    # D'abord les processus démarrés (dans l'ordre de démarrage), puis les autres
+    demarres = [p for p in resultat.processus if p.debut is not None]
+    non_demarres = [p for p in resultat.processus if p.debut is None]
+    demarres.sort(key=lambda p: (p.debut, p.ordre))
+
+    for p in demarres + non_demarres:
+        debut = "-" if p.debut is None else str(p.debut)
+        fin = "-" if p.fin is None else str(p.fin)
+        cpu = p.processeur if p.processeur is not None else "-"
+        print(f"{p.id:<10}{p.soumission:>7}{debut:>7}{fin:>6}{p.butoir:>8}  {cpu:<6}{LIBELLES_STATUT[p.statut()]}")
+
     print("\nMétriques EDF :")
     for cle, valeur in metriques.items():
         if cle != "algorithme":
-            print(f"  {cle:<28}{'(non défini)' if valeur is None else valeur}")
+            if valeur is None:
+                valeur = "(non défini)"
+            print(f"  {cle:<28}{valeur}")
+
     for avertissement in resultat.avertissements:
         print(f"Avertissement : {avertissement}")
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv=None):
     parseur = argparse.ArgumentParser(description="Ordonnancement EDF non préemptif (RAM + énergie renouvelable).")
     parseur.add_argument("test", nargs="?", default="Test1", help="nom du sous-dossier de Inputs/ (défaut : Test1)")
     parseur.add_argument("--racine", type=Path, default=RACINE, help="dossier contenant Code/, Inputs/, Outputs/")
@@ -78,10 +102,10 @@ def main(argv: list[str] | None = None) -> int:
         exiger_cles(config, ["fichier_processus", "fichier_global_EDF", "fichier_allocations_EDF", "fichier_metriques"])
 
         ressources = lire_ressources(trouver_fichier_ressources(dossier_in, config))
-        df_processus = lire_processus(dossier_in / config["fichier_processus"])
+        liste_processus = lire_processus(dossier_in / config["fichier_processus"])
         profil = lire_energie(dossier_in / config.get("fichier_energie", "energie.csv"))
 
-        resultat = ordonnancer_edf(df_processus, ressources, profil, apres_profil=args.energie_apres_profil)
+        resultat = ordonnancer_edf(liste_processus, ressources, profil, apres_profil=args.energie_apres_profil)
         metriques = calculer_metriques(resultat, ressources, "EDF")
 
         ecrire_allocation_globale(dossier_out / config["fichier_global_EDF"], resultat)
@@ -91,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Erreur : {erreur}", file=sys.stderr)
         return 1
 
-    _afficher_resume(resultat, metriques, ressources)
+    afficher_resume(resultat, metriques)
     print(f"\nRésultats écrits dans {dossier_out}")
     return 0
 
