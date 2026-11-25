@@ -1,7 +1,0 @@
-{
-  "nbProcesseurs": 2,
-  "ramTotale": 1024,
-  "energieParProc": 40,
-  "processeur": ["CPU1", "CPU2"]
-  
-}
