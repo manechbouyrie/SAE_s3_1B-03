@@ -9,7 +9,7 @@ public function read() {
         $vlistItems = $this->modeleCatalogue->getListProduitsTrier();
     }
     //else{
-    //    $vlistProduits = $this->modeleCatalogue->getListProduits();
+    //    $vlistProduits = $this->modeleCatalogue->getListProduits(); test
     //}
     include('include/header.php');
     include('Vue/VueCatalogue.php');

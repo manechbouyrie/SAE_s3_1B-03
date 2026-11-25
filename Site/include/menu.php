@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="CSS/menu.css">
 <aside id="catalogue-sidebar" aria-label="Tri et filtres du catalogue">
-  <form id="catalogue-filters-form" action="catalogue.php" method="get">
+  <form id="catalogue-filters-form" action="index.php?route=catalogue" method="post">
     <!-- Trier par -->
     <div class="filter-group">
       <label for="sort-by">Trier par</label>
