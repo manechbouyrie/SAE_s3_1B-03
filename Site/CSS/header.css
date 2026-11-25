@@ -1,0 +1,286 @@
+/* =========================================================
+   Charte graphique Spinova — Header & Navigation
+   ========================================================= */
+:root {
+  --spinova-nuit: #070913;
+  --spinova-nuit-elevated: #0e1326;
+  --spinova-nuit-card: #121830;
+  --spinova-nuit-hover: #182040;
+  --spinova-orange: #f46424;
+  --spinova-orange-hover: #ff7738;
+  --spinova-cyan: #2ec5e8;
+  --spinova-blanc: #ffffff;
+  --spinova-gris-bleu: #c4ccde;
+  --spinova-border: rgba(196, 204, 222, 0.18);
+  --spinova-focus: #2ec5e8;
+
+  --spinova-radius-sm: 8px;
+  --spinova-radius-md: 12px;
+  --spinova-radius-pill: 999px;
+
+  --spinova-font-display: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --spinova-font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.body {
+    
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--spinova-nuit);
+    color: var(--spinova-blanc);
+    padding-top: 68px;
+}
+
+/* Header principal */
+
+.spinova-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 68px;
+    box-sizing: border-box;
+    background-color: var(--spinova-nuit);
+    color: var(--spinova-blanc);
+    border-bottom: 1px solid var(--spinova-bordure);
+    padding: 0 20px;
+    z-index: 1030;
+}
+
+
+.spinova-header .container,
+.spinova-header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    height: 100%;
+}
+
+/* Logo */
+.spinova-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--spinova-blanc);
+    text-decoration: none;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.spinova-logo:hover,
+.spinova-logo:focus {
+    color: var(--spinova-blanc);
+    text-decoration: none;
+}
+
+/* Liens de navigation principaux */
+.spinova-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 1rem;
+}
+
+.spinova-nav a {
+    position: relative;
+    color: var(--spinova-blanc);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 600;
+    padding: 0.35rem 0.15rem;
+    transition: color 0.2s ease;
+}
+
+.spinova-nav a:hover,
+.spinova-nav a:focus,
+.spinova-nav a.active {
+    color: var(--spinova-orange);
+    text-decoration: none;
+}
+
+.spinova-nav a.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--spinova-orange);
+    border-radius: 2px;
+}
+
+/* Barre de recherche */
+.spinova-search {
+    display: flex;
+    align-items: center;
+    background-color: var(--spinova-nuit-elevated);
+    border: 1px solid var(--spinova-bordure);
+    padding: 0.2rem 0.35rem 0.2rem 0.75rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 20px;
+}
+
+.spinova-search:focus-within {
+    border-color: var(--spinova-cyan);
+    box-shadow: 0 0 0 2px rgba(37, 204, 247, 0.2);
+}
+
+.spinova-search input[type="search"] {
+    background: transparent;
+    border: none;
+    color: var(--spinova-blanc);
+    font-size: 0.88rem;
+    padding: 0.35rem 0.5rem;
+    min-width: 180px;
+    outline: none;
+    
+}
+
+.spinova-search input[type="search"]::placeholder {
+    color: var(--spinova-gris-bleu);
+}
+
+.spinova-search button {
+    background-color: var(--spinova-orange);
+    color: var(--spinova-blanc);
+    border: none;
+    border-radius: 17px;
+    padding: 0.38rem 0.75rem;
+    font-size: 0.82rem;
+    height: 34px;
+    width: 42px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.spinova-search button:hover,
+.spinova-search button:focus {
+    background-color: var(--spinova-orange-hover);
+}
+
+/* Zone actions droite (Panier + Avatar) */
+.spinova-actions {
+    display: flex;
+    align-items: flex-start;
+    margin-top:10px;
+    gap: 0.65rem;
+    height: 40;
+}
+
+.spinova-cart-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background-color: var(--spinova-nuit-elevated);
+    border: 1px solid var(--spinova-bordure);
+    color: var(--spinova-blanc);
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.spinova-cart-btn:hover,
+.spinova-cart-btn:focus {
+    border-color: var(--spinova-cyan);
+    color: var(--spinova-cyan);
+    background-color: var(--spinova-nuit-surface);
+    text-decoration: none;
+}
+
+/* Avatar & Menu déroulant */
+
+.spinova-avatar-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid var(--spinova-cyan);
+    background-color: var(--spinova-nuit-surface);
+    overflow: hidden;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.spinova-avatar-btn:hover,
+.spinova-avatar-btn:focus {
+    border-color: var(--spinova-orange);
+    transform: scale(1.03);
+    outline: none;
+}
+
+.spinova-avatar-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.spinova-avatar-wrapper {
+    position: relative;
+}
+
+.spinova-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 195px;
+    background-color: var(--spinova-nuit-surface);
+    border: 1px solid var(--spinova-bordure);
+    border-radius: 10px;
+    padding: 0.4rem 0;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+    z-index: 1050;
+}
+
+.spinova-dropdown-menu.is-open {
+    display: block;
+}
+
+/* Élément du menu déroulant */
+.spinova-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.55rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--spinova-blanc, #ffffff);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, padding-left 0.15s ease;
+}
+
+.spinova-dropdown-item:hover,
+.spinova-dropdown-item:focus {
+    color: var(--spinova-orange, #ff6e2c);
+    padding-left: 1.15rem;
+    text-decoration: none;
+}
+
+/* Option sensible (ex. Déconnexion) */
+.spinova-dropdown-item.danger {
+    color: #ff7b6b;
+}
+
+.spinova-dropdown-item.danger:hover,
+.spinova-dropdown-item.danger:focus {
+    background-color: rgba(242, 92, 25, 0.18);
+    color: var(--spinova-orange-hover, #ff6e2c);
+}
+

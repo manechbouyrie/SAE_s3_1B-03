@@ -1,0 +1,261 @@
+/* ==========================================================================
+   Charte graphique Spinova — Page Catalogue (VueCatalogue.php)
+   ========================================================================== */
+
+
+
+
+#catalogue {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* Conteneur principal du catalogue */
+#catalogue-page {
+  display: flex;
+  flex-direction: column;
+  align-items: top;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* En-tête du catalogue & barre de catégories */
+.catalogue-header {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.catalogue-header h1 {
+  margin: 0;
+  font-family: var(--spinova-font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--spinova-blanc);
+}
+
+#catalogue-count {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--spinova-gris-bleu);
+}
+
+.category-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.category-pill {
+  background-color: var(--spinova-nuit-elevated);
+  color: var(--spinova-gris-bleu);
+  border: 1px solid var(--spinova-border);
+  border-radius: var(--spinova-radius-pill);
+  padding: 0.55rem 1.05rem;
+  font-family: var(--spinova-font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.category-pill:hover {
+  color: var(--spinova-blanc);
+  border-color: var(--spinova-cyan);
+}
+
+.category-pill.active {
+  background-color: var(--spinova-blanc);
+  color: var(--spinova-nuit);
+  border-color: var(--spinova-blanc);
+}
+
+.category-pill:focus-visible {
+  outline: 2px solid var(--spinova-focus);
+  outline-offset: 2px;
+}
+
+/* Disposition latérale (sidebar + grille produits) */
+.catalogue-layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+/* Zone produits */
+#catalogue-products {
+  min-width: 0;
+}
+
+.empty-catalogue {
+  background-color: var(--spinova-nuit-card);
+  border: 1px solid var(--spinova-border);
+  border-radius: var(--spinova-radius-md);
+  padding: 2rem;
+  text-align: center;
+  color: var(--spinova-gris-bleu);
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Carte produit */
+.product-card {
+  background-color: var(--spinova-nuit-card);
+  border: 1px solid var(--spinova-border);
+  border-radius: var(--spinova-radius-md);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(46, 197, 232, 0.45);
+  background-color: var(--spinova-nuit-hover);
+}
+
+.product-card.out-of-stock {
+  opacity: 0.78;
+}
+
+/* Badges */
+.product-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-height: 1.4rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--spinova-radius-pill);
+  padding: 0.22rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.badge-rupture {
+  background-color: rgba(196, 204, 222, 0.16);
+  color: var(--spinova-gris-bleu);
+  border: 1px solid var(--spinova-border);
+}
+
+/* Titre, prix et métadonnées */
+.product-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-link:hover .product-title {
+  color: var(--spinova-cyan);
+}
+
+.product-title {
+  margin: 0;
+  font-family: var(--spinova-font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--spinova-blanc);
+}
+
+.product-price {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--spinova-blanc);
+}
+
+.product-meta,
+.product-colors {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--spinova-gris-bleu);
+}
+
+.product-rating {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--spinova-cyan);
+}
+
+/* Actions sur la carte produit */
+.product-actions {
+  margin-top: auto;
+  padding-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.btn-choose-color {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  background-color: transparent;
+  color: var(--spinova-blanc);
+  border: 1px solid var(--spinova-border);
+  border-radius: var(--spinova-radius-sm);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-choose-color:hover {
+  border-color: var(--spinova-cyan);
+  color: var(--spinova-cyan);
+}
+
+.btn-add-cart {
+  width: 100%;
+  background-color: var(--spinova-orange);
+  color: var(--spinova-blanc);
+  border: 0;
+  border-radius: var(--spinova-radius-sm);
+  padding: 0.68rem 0.9rem;
+  font-family: var(--spinova-font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-style: italic;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-add-cart:hover:not(:disabled) {
+  background-color: var(--spinova-orange-hover);
+}
+
+.btn-add-cart:disabled,
+.btn-add-cart.disabled {
+  background-color: rgba(196, 204, 222, 0.14);
+  color: var(--spinova-gris-bleu);
+  font-style: normal;
+  cursor: not-allowed;
+}
+
+.btn-choose-color:focus-visible,
+.btn-add-cart:focus-visible {
+  outline: 2px solid var(--spinova-focus);
+  outline-offset: 2px;
+}
+

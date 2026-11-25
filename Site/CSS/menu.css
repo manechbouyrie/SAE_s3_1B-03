@@ -1,0 +1,151 @@
+/* ==========================================================================
+   Charte graphique Spinova — Menu latéral du catalogue
+   Couleurs : Nuit, Orange, Cyan, Blanc, Gris bleu
+   ========================================================================== */
+
+
+
+#catalogue-filters-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Groupes de filtres et fieldsets */
+.filter-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group + .filter-group {
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--spinova-border);
+}
+
+.filter-group > label,
+.filter-group > legend {
+  font-family: var(--spinova-font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--spinova-blanc);
+  padding: 0;
+  margin-bottom: 0.25rem;
+}
+
+/* Sélecteur de tri et champ de recherche */
+#sort-by,
+#filter-recherche {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--spinova-nuit);
+  color: var(--spinova-blanc);
+  border: 1px solid var(--spinova-border);
+  border-radius: var(--spinova-radius-sm);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.92rem;
+  font-family: var(--spinova-font-body);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#filter-recherche::placeholder {
+  color: var(--spinova-gris-bleu);
+  opacity: 0.75;
+}
+
+#sort-by:hover,
+#filter-recherche:hover {
+  border-color: var(--spinova-cyan);
+}
+
+#sort-by:focus-visible,
+#filter-recherche:focus-visible {
+  outline: 2px solid var(--spinova-focus);
+  outline-offset: 2px;
+  border-color: var(--spinova-cyan);
+}
+
+.dual-range {
+  position: relative;
+  width: 100%;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  margin: 0.35rem 0;
+}
+
+.dual-range-track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background-color: rgba(196, 204, 222, 0.22);
+  border-radius: var(--spinova-radius-pill);
+  overflow: hidden;
+}
+
+.dual-range-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  background-color: var(--spinova-cyan);
+  border-radius: var(--spinova-radius-pill);
+}
+
+.dual-range input[type="range"] {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dual-range input[type="range"]::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--spinova-cyan);
+  border: 2px solid var(--spinova-blanc);
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.dual-range input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--spinova-cyan);
+  border: 2px solid var(--spinova-blanc);
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.dual-range input[type="range"]:focus-visible {
+  outline: 2px solid var(--spinova-focus);
+  outline-offset: 2px;
+}
+
+.price-bounds {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--spinova-cyan);
+}
